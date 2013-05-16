@@ -36,6 +36,7 @@
 #import "AEFloatConverter.h"
 #import <mach/mach_time.h>
 #import <pthread.h>
+#import "AESharedAudioController.h"
 
 static double __hostTicksToSeconds = 0.0;
 static double __secondsToHostTicks = 0.0;
@@ -301,7 +302,11 @@ static void serveAudiobusInputQueue(AEAudioController *THIS);
 #pragma mark - Audio session callbacks
 
 static void interruptionListener(void *inClientData, UInt32 inInterruption) {
-    AEAudioController *THIS = (AEAudioController *)inClientData;
+    AEAudioController *THIS = [AESharedAudioController sharedController].audioController;
+    if (!THIS) {
+        NSLog(@"TAAE: No audioController set on AESharedAudioController! Aborting interruptionListener.");
+        return;
+    }
     
     if (inInterruption == kAudioSessionEndInterruption) {
         NSLog(@"TAAE: Audio session interruption ended");
